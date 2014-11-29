@@ -126,7 +126,7 @@ public class Design implements Comparable<Design>, Serializable
         return this.value;
     }
 
-    /*
+    /**
      * Method crosses over this design with the otherDesign with crossoverProb probability
      * for each element (uses Uniform Crossover)
      */
@@ -138,7 +138,7 @@ public class Design implements Comparable<Design>, Serializable
         }
     }
 
-    /*
+    /**
      * Method mutates this design with mutationProb probability (uses bit flip mutation)
      */
     private void mutate(double mutationProb){
