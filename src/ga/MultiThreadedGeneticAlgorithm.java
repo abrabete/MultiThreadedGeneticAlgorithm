@@ -7,6 +7,6 @@ package ga;
 public class MultiThreadedGeneticAlgorithm {
 
     public static void main(String[] args){
-        
+
     }
 }
