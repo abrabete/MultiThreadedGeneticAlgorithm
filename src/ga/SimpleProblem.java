@@ -14,7 +14,7 @@ public class SimpleProblem implements Problem {
     @Override
     public Number evaluate(Design d) {
         Boolean[] designVector = d.getDesignParameters();
-        Integer value = 0;
+        Double value = 0.0;
         for (int i = 0; i < designVector.length; i++) {
             if (designVector[i]) {
                 value = value + 3;

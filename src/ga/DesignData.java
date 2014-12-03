@@ -2,6 +2,7 @@ package ga;
 
 import java.util.ArrayList;
 import java.io.*;
+import java.util.Collections;
 
 /**
  * Created by Andrei on 12/1/2014.
@@ -11,8 +12,10 @@ public class DesignData implements Serializable {
 
     private ArrayList<Design> rank;
     private ArrayList<Design> rankBackup;
+    private int len;
 
     public DesignData(int len) {
+        this.len = len;
         this.rank = new ArrayList<Design>(len);
         this.rankBackup = new ArrayList<Design>(len);
     }
@@ -53,5 +56,23 @@ public class DesignData implements Serializable {
 
     public synchronized void updateRank(Design design) {
 
+        rankBackup = this.getRank();
+        if (rank.isEmpty()) {
+            rank.add(design);
+        }
+        else if (rank.size()<len) {
+            if (!rank.contains(design)) {
+                rank.add(design);
+                Collections.sort(rank);
+            }
+        }
+        else {
+            if (!rank.contains(design)) {
+                if (rank.get(len-1).getValue().doubleValue()<design.getValue().doubleValue()) {
+                    rank.set(len-1, design);
+                    Collections.sort(rank);
+                }
+            }
+        }
     }
 }
