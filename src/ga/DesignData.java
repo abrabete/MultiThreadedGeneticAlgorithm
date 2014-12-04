@@ -52,7 +52,7 @@ public class DesignData implements Serializable {
         try {
             PrintWriter writer = new PrintWriter("results.txt");
             // write out the value of each design to a new line in the file
-            for (int i=0; i<this.rank.size(); i++) {
+            for (int i=this.rank.size()-1; i>=0; i--) {
                 writer.println("Design number: " + i + "= " + this.rank.get(i).getValue());
             }
             writer.close();
@@ -110,8 +110,8 @@ public class DesignData implements Serializable {
         // and then sort the list
         else {
             if (!rank.contains(design)) {
-                if (rank.get(len-1).getValue().doubleValue()<design.getValue().doubleValue()) {
-                    rank.set(len-1, design);
+                if (rank.get(0).getValue().doubleValue()<design.getValue().doubleValue()) {
+                    rank.set(0, design);
                     Collections.sort(rank);
                 }
             }
