@@ -51,7 +51,7 @@ public class Design implements Comparable<Design>, Serializable
             return Design.EQUAL;
         if (this.value.doubleValue() < otherDesign.value.doubleValue())
             return Design.SMALLER;
-        else if (this.value.doubleValue() < otherDesign.value.doubleValue())
+        else if (this.value.doubleValue() > otherDesign.value.doubleValue())
             return Design.BIGGER;
         return Design.EQUAL;
     }

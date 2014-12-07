@@ -21,6 +21,8 @@ public class MultiThreadedGeneticAlgorithm {
         MultiThreadedGeneticAlgorithm.checkArguments(args);
         problem = Helper.getProblem(args[0]);
         data = new DesignData(eliteSize);
+       
+
 
 
     }
@@ -49,6 +51,7 @@ public class MultiThreadedGeneticAlgorithm {
         private Double crossoverProb;
         private Double mutationProb;
         private Design design;
+        private Design otherDesign;
         private int counter;
 
         private Evaluator() {
@@ -61,20 +64,38 @@ public class MultiThreadedGeneticAlgorithm {
 
 
         public void run() {
-            try {
-                counter = 0;
-                while (counter<terminateVal) {
-                    design.evaluate();
-                    MultiThreadedGeneticAlgorithm.data.updateRank(design);
-                    counter++;
-                    if(counter<terminateVal) {
-                        Design otherDesign = MultiThreadedGeneticAlgorithm.data.getRank()
-                        design.evolve();
+            counter = 0;
+            while (counter<terminateVal) {
+                this.design.evaluate();
+                MultiThreadedGeneticAlgorithm.data.updateRank(design);
+                counter++;
+                boolean updated = false;
+                if(counter<terminateVal) {
+                    while (!updated) {
+                        if (MultiThreadedGeneticAlgorithm.data.getRankLockStatus()) {
+                            this.otherDesign = MultiThreadedGeneticAlgorithm.data.getRankDesign();
+                            this.design.evolve(this.otherDesign, this.crossoverProb, this.mutationProb);
+                            updated = true;
+                        } else if (MultiThreadedGeneticAlgorithm.data.getBackupLockStatus()) {
+                            this.otherDesign = MultiThreadedGeneticAlgorithm.data.getBackupDesign();
+                            this.design.evolve(this.otherDesign, this.crossoverProb, this.mutationProb);
+                            updated = true;
+                        } else {
+                            try {
+                                wait(50);
+                            } catch (InterruptedException e) {
+                                System.exit(1);
+                            }
+                        }
                     }
                 }
-
-            } catch () {
             }
         }
+    }
+
+    private void runEvaluators() {
+            for (int i = 0; i < population; i++) {
+                (new Evaluator()).start();
+            }
     }
 }

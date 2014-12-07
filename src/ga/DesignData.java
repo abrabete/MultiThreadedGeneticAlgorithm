@@ -3,6 +3,9 @@ package ga;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.Collections;
+import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * The DesignData Class will hold a record of the elite ranked designs.
@@ -14,6 +17,9 @@ public class DesignData implements Serializable {
     private ArrayList<Design> rank; //elite ranked set
     private ArrayList<Design> rankBackup; //one update behind rank list
     private int len; //the given length of the elite set
+    private Lock rankLock = new ReentrantLock();
+    private Random random = new Random();
+    private Lock backupLock = new ReentrantLock();
 
     /**
      * Method to construct DesignData with ranked lists of specified length.
@@ -72,6 +78,17 @@ public class DesignData implements Serializable {
         return this.rank;
     }
 
+
+    public Design getRankDesign() {
+        try {
+            rankLock.lock();
+            int i = this.random.nextInt(this.rank.size() - 1);
+            return this.rank.get(i);
+        } finally {
+            rankLock.unlock();
+        }
+    }
+
     /**
      * Method to return the ranked set which is one update behind the live version.
      * Synchronized for thread safety.
@@ -80,6 +97,17 @@ public class DesignData implements Serializable {
      */
     public synchronized ArrayList<Design> getRankBackup() {
         return this.rankBackup;
+    }
+
+
+    public Design getBackupDesign() {
+        try {
+            backupLock.lock();
+            int i = this.random.nextInt(this.rankBackup.size()-1);
+            return this.rankBackup.get(i);
+        } finally {
+            backupLock.unlock();
+        }
     }
 
     /**
@@ -116,5 +144,13 @@ public class DesignData implements Serializable {
                 }
             }
         }
+    }
+
+    public boolean getRankLockStatus() {
+        return this.rankLock.tryLock();
+    }
+
+    public boolean getBackupLockStatus() {
+        return this.backupLock.tryLock();
     }
 }
