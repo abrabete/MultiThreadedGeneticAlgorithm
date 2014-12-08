@@ -15,12 +15,11 @@ public class SimpleProblem implements Problem {
     public Number evaluate(Design d) {
         Boolean[] designVector = d.getDesignParameters();
         Double value = 0.0;
-        for (int i = 0; i < designVector.length; i++) {
-            if (designVector[i]) {
-                value = value + 3;
-            }
-            else {
-                value = value - 1;
+        for (Boolean aDesignVector : designVector) {
+            if (aDesignVector) {
+                value = value + 3.0;
+            } else {
+                value = value - 1.0;
             }
         }
         return value;
@@ -32,8 +31,8 @@ public class SimpleProblem implements Problem {
     public ArrayList<Boolean> getRandomDesignVector() {
         ArrayList<Boolean> vector = new ArrayList<Boolean>(25);
         Random rand = new Random();
-        for (int i=0; i<vector.size(); i++) {
-            vector.set(i, rand.nextBoolean());
+        for (int i=0; i<25; i++) {
+            vector.add(rand.nextBoolean());
         }
         return vector;
     }

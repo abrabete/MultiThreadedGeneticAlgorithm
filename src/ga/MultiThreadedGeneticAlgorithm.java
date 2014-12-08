@@ -4,7 +4,7 @@ package ga;
  * Created by Andrei on 11/29/2014.
  * Version v1.12
  */
-public class MultiThreadedGeneticAlgorithm {
+class MultiThreadedGeneticAlgorithm {
 
     private static int population;
     private static int eliteSize;
@@ -21,13 +21,13 @@ public class MultiThreadedGeneticAlgorithm {
         MultiThreadedGeneticAlgorithm.checkArguments(args);
         problem = Helper.getProblem(args[0]);
         data = new DesignData(eliteSize);
-       
-
-
-
+        (new MultiThreadedGeneticAlgorithm()).runEvaluators();
+        //data.serialize();
+        data.sortRank();
+        data.saveFile();
     }
 
-    public static void checkArguments(String [] arg) throws EliteSizeException, CrossoverProbabilityException,
+    private static void checkArguments(String[] arg) throws EliteSizeException, CrossoverProbabilityException,
                                                             PopulationSizeException, MutationProbabilityException,
                                                             TerminationValueException{
 
@@ -47,10 +47,10 @@ public class MultiThreadedGeneticAlgorithm {
     private class Evaluator extends Thread {
 
         private Problem problem;
-        private int terminateVal;
-        private Double crossoverProb;
-        private Double mutationProb;
-        private Design design;
+        private final int terminateVal;
+        private final Double crossoverProb;
+        private final Double mutationProb;
+        private final Design design;
         private Design otherDesign;
         private int counter;
 
@@ -67,25 +67,28 @@ public class MultiThreadedGeneticAlgorithm {
             counter = 0;
             while (counter<terminateVal) {
                 this.design.evaluate();
-                MultiThreadedGeneticAlgorithm.data.updateRank(design);
+                if (this.design.isEvaluated()) {
+                    MultiThreadedGeneticAlgorithm.data.updateRank(this.design);
+                    System.out.println("size of Rank "+MultiThreadedGeneticAlgorithm.data.sizeOfRank());
+                }
                 counter++;
                 boolean updated = false;
                 if(counter<terminateVal) {
                     while (!updated) {
-                        if (MultiThreadedGeneticAlgorithm.data.getRankLockStatus()) {
-                            this.otherDesign = MultiThreadedGeneticAlgorithm.data.getRankDesign();
-                            this.design.evolve(this.otherDesign, this.crossoverProb, this.mutationProb);
-                            updated = true;
-                        } else if (MultiThreadedGeneticAlgorithm.data.getBackupLockStatus()) {
-                            this.otherDesign = MultiThreadedGeneticAlgorithm.data.getBackupDesign();
-                            this.design.evolve(this.otherDesign, this.crossoverProb, this.mutationProb);
-                            updated = true;
-                        } else {
-                            try {
-                                wait(50);
-                            } catch (InterruptedException e) {
-                                System.exit(1);
+                        if (!MultiThreadedGeneticAlgorithm.data.getRankLockStatus()) {
+
+                            if (MultiThreadedGeneticAlgorithm.data.getRank().size() >= 0) {
+                                this.otherDesign = MultiThreadedGeneticAlgorithm.data.getRankDesign();
+                                this.design.evolve(this.otherDesign, this.crossoverProb, this.mutationProb);
                             }
+                            updated = true;
+                        } else if (!MultiThreadedGeneticAlgorithm.data.getBackupLockStatus()) {
+
+                            if (MultiThreadedGeneticAlgorithm.data.getRankBackup().size() >= 0) {
+                                this.otherDesign = MultiThreadedGeneticAlgorithm.data.getBackupDesign();
+                                this.design.evolve(this.otherDesign, this.crossoverProb, this.mutationProb);
+                            }
+                            updated = true;
                         }
                     }
                 }

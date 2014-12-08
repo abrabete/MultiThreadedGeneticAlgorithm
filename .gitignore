@@ -1,3 +1,6 @@
 *.name
 *.xml
 *.iml
+*.class
+*.ser
+*.txt

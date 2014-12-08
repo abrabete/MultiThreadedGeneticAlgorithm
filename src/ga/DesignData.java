@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.io.*;
 import java.util.Collections;
 import java.util.Random;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -12,14 +11,14 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @version 1.0
  */
-public class DesignData implements Serializable {
+class DesignData implements Serializable {
 
     private ArrayList<Design> rank; //elite ranked set
     private ArrayList<Design> rankBackup; //one update behind rank list
-    private int len; //the given length of the elite set
-    private Lock rankLock = new ReentrantLock();
+    private final int LEN; //the given length of the elite set
+    private ReentrantLock rankLock = new ReentrantLock();
     private Random random = new Random();
-    private Lock backupLock = new ReentrantLock();
+    private ReentrantLock backupLock = new ReentrantLock();
 
     /**
      * Method to construct DesignData with ranked lists of specified length.
@@ -27,7 +26,7 @@ public class DesignData implements Serializable {
      * @param len The length of the elite set
      */
     public DesignData(int len) {
-        this.len = len;
+        this.LEN = len;
         this.rank = new ArrayList<Design>(len);
         this.rankBackup = new ArrayList<Design>(len);
     }
@@ -44,6 +43,7 @@ public class DesignData implements Serializable {
             out.flush();
             out.close();
         } catch (IOException e) {
+            //noinspection ThrowablePrintedToSystemOut
             System.out.println(e);
             System.exit(1);
         }
@@ -60,9 +60,11 @@ public class DesignData implements Serializable {
             // write out the value of each design to a new line in the file
             for (int i=this.rank.size()-1; i>=0; i--) {
                 writer.println("Design number: " + i + "= " + this.rank.get(i).getValue());
+                System.out.println("Design number: " + i + "= " + this.rank.get(i).getValue());
             }
             writer.close();
         } catch (IOException e) {
+            //noinspection ThrowablePrintedToSystemOut
             System.out.println(e);
             System.exit(1);
         }
@@ -79,10 +81,10 @@ public class DesignData implements Serializable {
     }
 
 
-    public Design getRankDesign() {
+    public synchronized Design getRankDesign() {
         try {
             rankLock.lock();
-            int i = this.random.nextInt(this.rank.size() - 1);
+            int i = this.random.nextInt(this.rank.size());
             return this.rank.get(i);
         } finally {
             rankLock.unlock();
@@ -100,10 +102,10 @@ public class DesignData implements Serializable {
     }
 
 
-    public Design getBackupDesign() {
+    public synchronized Design getBackupDesign() {
         try {
             backupLock.lock();
-            int i = this.random.nextInt(this.rankBackup.size()-1);
+            int i = this.random.nextInt(this.rankBackup.size());
             return this.rankBackup.get(i);
         } finally {
             backupLock.unlock();
@@ -126,7 +128,7 @@ public class DesignData implements Serializable {
         // if the ranked set is not empty, but not full
         // check that the design is not already contained within the list
         // and if not, add to the list and then sort it
-        else if (rank.size()<len) {
+        else if (rank.size()<this.LEN) {
             if (!rank.contains(design)) {
                 rank.add(design);
                 Collections.sort(rank);
@@ -147,10 +149,18 @@ public class DesignData implements Serializable {
     }
 
     public boolean getRankLockStatus() {
-        return this.rankLock.tryLock();
+        return this.rankLock.isLocked();
     }
 
     public boolean getBackupLockStatus() {
-        return this.backupLock.tryLock();
+        return this.backupLock.isLocked();
+    }
+
+    public void sortRank() {
+        Collections.sort(rank);
+    }
+
+    public int sizeOfRank() {
+        return rank.size();
     }
 }
