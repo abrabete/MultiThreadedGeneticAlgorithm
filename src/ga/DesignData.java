@@ -54,7 +54,7 @@ class DesignData implements Serializable {
      * one on each row, ordered from best to worst.
      *
      */
-    public void saveFile() {
+    public synchronized void saveFile() {
         try {
             PrintWriter writer = new PrintWriter("results.txt");
             // write out the value of each design to a new line in the file
@@ -119,32 +119,35 @@ class DesignData implements Serializable {
      * @param design The design for the set to be updated with
      */
     public synchronized void updateRank(Design design) {
-
         rankBackup = this.getRank(); // update the backup
         // simply add the design if the ranked set is empty
         if (rank.isEmpty()) {
             rank.add(design);
+            System.out.println("First element: "+rank.get(0).getValue().doubleValue());
         }
         // if the ranked set is not empty, but not full
         // check that the design is not already contained within the list
         // and if not, add to the list and then sort it
         else if (rank.size()<this.LEN) {
-            if (!rank.contains(design)) {
                 rank.add(design);
-                Collections.sort(rank);
-            }
+                this.sortRank();
+                for (Design adesign: rank) {
+                    System.out.println("Rank contents new: "+adesign.getValue().doubleValue());
+                }
         }
+
         // if the ranked set is full, check to see if it contains the design
         // if it does not, check the worst design in the set against the new design
         // if the new design is better, replace the current worst design
         // and then sort the list
         else {
-            if (!rank.contains(design)) {
                 if (rank.get(0).getValue().doubleValue()<design.getValue().doubleValue()) {
                     rank.set(0, design);
-                    Collections.sort(rank);
+                    this.sortRank();
+                    for (Design adesign: rank) {
+                        System.out.println("Rank contents change: "+adesign.getValue().doubleValue());
+                    }
                 }
-            }
         }
     }
 
@@ -156,7 +159,7 @@ class DesignData implements Serializable {
         return this.backupLock.isLocked();
     }
 
-    public void sortRank() {
+    public synchronized void sortRank() {
         Collections.sort(rank);
     }
 

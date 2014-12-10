@@ -23,6 +23,7 @@ class MultiThreadedGeneticAlgorithm {
         data = new DesignData(eliteSize);
         (new MultiThreadedGeneticAlgorithm()).runEvaluators();
         //data.serialize();
+
         data.sortRank();
         data.saveFile();
     }
@@ -68,8 +69,9 @@ class MultiThreadedGeneticAlgorithm {
             while (counter<terminateVal) {
                 this.design.evaluate();
                 if (this.design.isEvaluated()) {
-                    MultiThreadedGeneticAlgorithm.data.updateRank(this.design);
-                    System.out.println("size of Rank "+MultiThreadedGeneticAlgorithm.data.sizeOfRank());
+                    if (this.design != null) {
+                        MultiThreadedGeneticAlgorithm.data.updateRank(this.design);
+                    }
                 }
                 counter++;
                 boolean updated = false;
